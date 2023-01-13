@@ -1,0 +1,141 @@
+library(lpSolve)
+library(nloptr)
+
+f.obj1 <- c(5,8)
+f.con <- matrix(c(-1,3,2,5,3,2,1,-3,2,5,5,1),nrow=6,byrow=TRUE)
+f.dir <- c("<=","<=","<=","<=",">=",">=")
+f.rhs <- c(12,30,22,0,10,5)
+#jb
+lp("max",f.obj1,f.con,f.dir,f.rhs)
+lp("max",f.obj1,f.con,f.dir,f.rhs)$solution
+result1<-lp("max",f.obj1,f.con,f.dir,f.rhs)$objval
+
+f.obj2 <- c(20000,9000000)
+lp("max",f.obj2,f.con,f.dir,f.rhs)
+lp("max",f.obj2,f.con,f.dir,f.rhs)$solution
+result2<-lp("max",f.obj2,f.con,f.dir,f.rhs)$objval
+
+
+
+f.obj <- c(-20000*k1/result2-(1-k1)*5/result1, -90000000*k1/result2-(1-k1)*8/result1)
+lp("min",f.obj,f.con,f.dir,f.rhs)
+lp("min",f.obj,f.con,f.dir,f.rhs)$solution
+
+
+w<-1
+eval_f1 <- function( x ){
+  return(w*((result1-(5*x[1]+8*x[2]))/result1)+(1-w)*((result2-(20000*x[1]+9000000*x[2]))/result2) )
+}
+eval_g <- function( x ) {
+  ( constr<-c(-12-x[1]+3*x[2], -22+3*x[1]+2*x[2], -30+2*x[1]+5*x[2], x[1]-3*x[2], 10-2*x[1]-5*x[2], 5-5*x[1]-x[2]))
+  return (constr)
+}
+res1 <- nloptr( x0=c(0,0),
+                eval_f=eval_f1,
+                lb = c(0,0),
+                ub = c(Inf,Inf),
+                eval_g_ineq = eval_g,
+                opts = list("algorithm"="NLOPT_LN_COBYLA",
+                            "xtol_rel"=1.0e-8))
+print( res1 )
+
+
+
+
+x1<-seq(0,6,by=0.1)
+x2<-seq(0,6,by=0.1)
+d<-expand.grid(x1=x1,x2=x2) 
+d<-subset(d,c(-x1+3*x2<=12,
+              2*x1+5*x2<=30,
+              3*x1+2*x2<=22,
+              x1-3*x2<=0,
+              2*x1+5*x2>=10,
+              5*x1+x2>=5))
+d$u1<-5*d$x1+8*d$x2
+d$u2<--20000*d$x1-9000000*d$x2
+plot(d$u2~d$u1,type="p",pch=19,col="red",main="????????? ???????",xlab=expression(u[1]),ylab=expression(u[2]),cex=0.8)
+
+
+
+
+
+
+
+
+
+
+
+
+
+eval_f2 <- function( x ){
+  return(-(x[1]-4)^2-100*x[2]^2)
+}
+eval_g2 <- function( x ) {
+  ( constr<-c(-12-x[1]+3*x[2], -22+3*x[1]+2*x[2], -30+2*x[1]+5*x[2], x[1]-3*x[2], 10-2*x[1]-5*x[2], 5-5*x[1]-x[2]))
+  return (constr)
+}
+res2 <- nloptr( x0=c(0,0),
+                eval_f=eval_f2,
+                lb = c(0,0),
+                ub = c(Inf,Inf),
+                eval_g_ineq = eval_g2,
+                opts = list("algorithm"="NLOPT_LN_COBYLA",
+                            "xtol_rel"=1.0e-8))
+print( res2 )
+r1<-res2$objective
+
+eval_f3 <- function( x ){
+  return((100*x[1]^2+(x[2]-3)^2))
+}
+eval_g3 <- function( x ) {
+  ( constr<-c(-12-x[1]+3*x[2], -22+3*x[1]+2*x[2], -30+2*x[1]+5*x[2], x[1]-3*x[2], 10-2*x[1]-5*x[2], 5-5*x[1]-x[2]))
+  return (constr)
+}
+res3 <- nloptr( x0=c(0,0),
+                eval_f=eval_f3,
+                lb = c(0,0),
+                ub = c(Inf,Inf),
+                eval_g_ineq = eval_g3,
+                opts = list("algorithm"="NLOPT_LN_COBYLA",
+                            "xtol_rel"=1.0e-8))
+print( res3 )
+r2<-res3$objective
+
+
+
+w2<-1
+
+eval_f4 <- function( x ){
+  return( w2*(r1+((x[1]-4)^2+100*x[2]^2))/r1+(1-w2)*(r2 +(100*x[1]^2+(x[2]-3)^2))/r2 )
+}
+
+eval_g4 <- function( x ) {
+  ( constr<-c(-12-x[1]+3*x[2], -22+3*x[1]+2*x[2], -30+2*x[1]+5*x[2], x[1]-3*x[2], 10-2*x[1]-5*x[2], 5-5*x[1]-x[2]))
+  return (constr)
+}
+res4 <- nloptr( x0=c(0,0),
+                eval_f=eval_f4,
+                lb = c(0,0),
+                ub = c(Inf,Inf),
+                eval_g_ineq = eval_g4,
+                opts = list("algorithm"="NLOPT_LN_COBYLA",
+                            "xtol_rel"=1.0e-8))
+print( res4 )
+
+
+
+
+
+x1<-seq(0,6,by=0.1)
+x2<-seq(0,6,by=0.1)
+d<-expand.grid(x1=x1,x2=x2) 
+d<-subset(d,c(-x1+3*x2<=12,
+              2*x1+5*x2<=30,
+              3*x1+2*x2<=22,
+              x1-3*x2<=0,
+              -2*x1-5*x2<=-10,
+              -5*x1-x2<=-5))
+d<-na.omit(d)
+d$u1<-(d$x1-4)^2+100*d$x2^2
+d$u2<-100*d$x1^2+(d$x2-3)^2
+plot(d$u2~d$u1,type="p",pch=19,col="lightblue",main="????????? ???????",xlab=expression(u[1]),ylab=expression(u[2]),cex=0.8)
